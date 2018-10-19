@@ -1,0 +1,11 @@
+{
+  "name": "data-driven-gql",
+  "version": "1.0.0",
+  "description": "Some experiments toward data-driven GraphQL schema",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Greg Wiley",
+  "license": "ISC"
+}
