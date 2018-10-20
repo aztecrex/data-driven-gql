@@ -107,7 +107,8 @@ const QueryX = `
 `;
 
 
-const MutationX = `
+const TestOps = `
+
     input JournalEntryIn {
         """
         Unique entry reference identifier defined by the entity posting the entry. Uniqueness
@@ -116,8 +117,19 @@ const MutationX = `
         clientReference : String!
     }
 
-    type JournalOps {
-        post(entry: JournalEntryIn!) : JournalEntry!
+    type TestJournalOps implements JournalOps {
+        id : ID!
+        post(entry : JournalEntryIn!) : JournalEntry!
+    }
+
+
+`;
+
+
+const MutationX = `
+
+    interface JournalOps {
+        id : ID!
     }
 
     extend type Mutation {
@@ -125,6 +137,9 @@ const MutationX = `
     }
 `;
 
-const types = () => [QueryX, Journal, JournalEntry, TenantX, MutationX, TenantTypes];
+
+        // post(entry: JournalEntryIn!) : JournalEntry!
+
+const types = () => [QueryX, Journal, JournalEntry, TenantX, MutationX, TestOps, TenantTypes];
 
 export default types
