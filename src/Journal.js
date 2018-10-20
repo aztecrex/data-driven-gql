@@ -1,5 +1,6 @@
-const JournalTypes = `
+import TenantTypes from './Tenant';
 
+const JournalEntry = `
     """
     A business event. Generally, a journal entry results
     in a financial impact, i.e. a ledger transaction.
@@ -29,15 +30,17 @@ const JournalTypes = `
         """
         Journal that holds this entry.
         """
-        journal: Journal
+        journal: Journal!
 
         """
         The Tenant owning this entry.
         """
-        tenant: Tenant
+        tenant: Tenant!
 
     }
+`;
 
+const Journal = `
     """
     A collection of business events with commonly-defined meaning.
     """
@@ -48,37 +51,61 @@ const JournalTypes = `
         id: ID!
 
         """
+        Journal name. Required but not unique.
+        """
+        name: String!
+
+        """
+        Journal description. Not required.
+        """
+        description: String
+
+        """
         List of journal entries ordered by the "id" field, specified by a time stamp range.
         """
         entriesForRange("start of range inclusive" from: String! "end of range exclusive" to: String!): [JournalEntry!]!
 
         """
+        All journal entries ordered by the "id" field.
+        """
+        entries: [JournalEntry!]!
+
+        """
         The Tenant owning this journal.
         """
-        tenant: Tenant
+        tenant: Tenant!
     }
+`;
 
-    """
-    Isolated clearinghouse instance.
-    """
-    type Tenant {
-        """
-        Tenant identity.
-        """
-        id: ID!
-
+const TenantX = `
+    extend type Tenant {
         """
         All journals in the instance.
         """
         journals: [Journal!]!
 
         """
-        Journal by identifier
+        Lookup journals by name. Names are not unique so this can return zero or more
+        Journals.
         """
-        journalForId(id: ID!): Journal
-
+        journalsForName (name: String!): [Journal!]!
     }
+`
 
+const QueryX = `
+    extend type Query {
+        """
+        Fetch a journal by its identifier.
+        """
+        journalForId(id: ID!): Journal!
+
+        """
+        Fetch a journal entry by its identifier.
+        """
+        journalEntryForId(id: String!): JournalEntry!
+    }
 `;
 
-export default () => [JournalTypes];
+const types = () => [QueryX, Journal, JournalEntry, TenantX, TenantTypes];
+
+export default types

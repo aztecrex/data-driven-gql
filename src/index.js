@@ -4,21 +4,22 @@ import graphqlHTTP from 'express-graphql';
 import { makeExecutableSchema} from 'graphql-tools';
 
 import JournalTypes from './Journal';
+import TenantTypes from './Tenant';
 
-const RootQuery = `
-    type RootQuery {
-        tenants: [Tenant!]!
-    }
-`
 
 const Schema = `
     schema {
-        query: RootQuery
+        query: Query
     }
+
+    """
+    Root query.
+    """
+    type Query
 `
 
 const schema = makeExecutableSchema({
-    typeDefs: [RootQuery, Schema, JournalTypes],
+    typeDefs: [Schema, JournalTypes, TenantTypes],
 });
 
 
