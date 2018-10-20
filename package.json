@@ -9,6 +9,8 @@
   "author": "Greg Wiley",
   "license": "ISC",
   "dependencies": {
+    "express": "^4.16.4",
+    "express-graphql": "^0.6.12",
     "graphql": "^14.0.2",
     "graphql-tools": "^4.0.2"
   }
