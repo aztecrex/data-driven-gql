@@ -3,7 +3,7 @@ import graphqlHTTP from 'express-graphql';
 
 import { makeExecutableSchema} from 'graphql-tools';
 
-import JournalTypes from './Journal';
+import {JournalTypes, JournalResolvers} from './Journal';
 import TenantTypes from './Tenant';
 
 
@@ -26,6 +26,7 @@ const Schema = `
 
 const schema = makeExecutableSchema({
     typeDefs: [Schema, JournalTypes, TenantTypes],
+    resolvers: [JournalResolvers]
 });
 
 

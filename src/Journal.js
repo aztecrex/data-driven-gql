@@ -1,3 +1,5 @@
+import * as R from 'ramda';
+
 import TenantTypes from './Tenant';
 
 const JournalEntry = `
@@ -107,24 +109,47 @@ const QueryX = `
 `;
 
 
+
+
 const TestOps = `
 
-    input JournalEntryIn {
+    input TestIn {
         """
         Unique entry reference identifier defined by the entity posting the entry. Uniqueness
         is with respect to the journal in which the entry resides.
         """
         clientReference : String!
+
+        amount: Int
     }
 
     type TestJournalOps implements JournalOps {
         id : ID!
-        post(entry : JournalEntryIn!) : JournalEntry!
+        post(entry : TestIn!) : JournalEntry!
     }
 
 
 `;
 
+const OtherOps = `
+
+    input OtherIn {
+        """
+        Unique entry reference identifier defined by the entity posting the entry. Uniqueness
+        is with respect to the journal in which the entry resides.
+        """
+        clientReference : String!
+
+        adjust: Int
+    }
+
+    type OtherJournalOps implements JournalOps {
+        id : ID!
+        post(entry : OtherIn!) : JournalEntry!
+    }
+
+
+`;
 
 const MutationX = `
 
@@ -133,13 +158,33 @@ const MutationX = `
     }
 
     extend type Mutation {
-        withJournal (id: ID!) : JournalOps
+        withJournal (id: ID!) : JournalOps!
     }
 `;
 
 
-        // post(entry: JournalEntryIn!) : JournalEntry!
+const tenant = {id: 10092};
+const journals = [
+    {
+        id: "1",
+        name: "Sales",
+        description: "All sales",
+        tenant : tenant,
+    },
+    {
+        id: "2",
+        name: "Discounts",
+        description: "All discounts",
+        tenant : tenant,
+    },
+];
 
-const types = () => [QueryX, Journal, JournalEntry, TenantX, MutationX, TestOps, TenantTypes];
+const JournalResolvers = {
+    Query: {
+        journalForId: (_, {id}) => R.find(obj => obj.id === id, journals),
+    }
+}
 
-export default types
+const JournalTypes = () => [QueryX, Journal, JournalEntry, TenantX, MutationX, TestOps, OtherOps, TenantTypes];
+
+export {JournalTypes, JournalResolvers};
