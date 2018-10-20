@@ -106,6 +106,29 @@ const QueryX = `
     }
 `;
 
-const types = () => [QueryX, Journal, JournalEntry, TenantX, TenantTypes];
+
+const JournalEntrySpec = `
+    input JournalEntrySpec {
+        """
+        Unique entry reference identifier defined by the entity posting the entry. Uniqueness
+        is with respect to the journal in which the entry resides.
+        """
+        clientReference : String!
+
+    }
+`;
+
+const MutationX = `
+
+    type JournalOps {
+        post(reference: String!) : JournalEntry
+    }
+
+    extend type Mutation {
+        withJournal (id: ID!) : JournalOps
+    }
+`;
+
+const types = () => [QueryX, Journal, JournalEntry, TenantX, JournalEntrySpec, MutationX, TenantTypes];
 
 export default types

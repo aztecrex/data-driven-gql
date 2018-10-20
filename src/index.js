@@ -10,12 +10,18 @@ import TenantTypes from './Tenant';
 const Schema = `
     schema {
         query: Query
+        mutation: Mutation
     }
 
     """
     Root query.
     """
     type Query
+
+    """
+    Root mutation.
+    """
+    type Mutation
 `
 
 const schema = makeExecutableSchema({
