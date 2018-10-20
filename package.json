@@ -4,6 +4,7 @@
   "description": "Some experiments toward data-driven GraphQL schema",
   "main": "index.js",
   "scripts": {
+    "server": "babel-node src/index",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Greg Wiley",
@@ -13,5 +14,11 @@
     "express-graphql": "^0.6.12",
     "graphql": "^14.0.2",
     "graphql-tools": "^4.0.2"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.1.2",
+    "@babel/core": "^7.1.2",
+    "@babel/node": "^7.0.0",
+    "@babel/preset-env": "^7.1.0"
   }
 }
