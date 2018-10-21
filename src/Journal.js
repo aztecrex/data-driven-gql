@@ -136,7 +136,6 @@ const DynTypes = () => {
 
     const rval = R.concat(R.concat(entryTypes, inputTypes), [mutateX]);
 
-    console.log("--------------------", JSON.stringify(rval));
     return rval;
 }
 
@@ -169,7 +168,7 @@ const FixedResolvers = {
 const DynResolvers = (() => {
     var dot = 19390421;
     const journals = DB.allJournals();
-    return R.reduce((obj, jnl) => {
+    const opsResolvers = R.reduce((obj, jnl) => {
         const res = {
             [opsName(jnl)]: {
                 post: (_, {reference, entry}) => {
@@ -189,10 +188,17 @@ const DynResolvers = (() => {
             }
         };
         return {...res, ...obj};
-    }, {}, journals);
+    }, {}, journals)
+    const mutationResolver = {Mutation: R.reduce((obj, jnl) => {
+        const res = {
+            [mutatorName(jnl)]: () => jnl,
+        };
+        return {...res, ...obj}
+    }, {}, journals)};
+    return {...opsResolvers, ...mutationResolver};
 })();
 
 const JournalTypes = () => [QueryX, Journal, JournalEntry, MutationX, DynTypes];
-const JournalResolvers = {...FixedResolvers, ...DynResolvers}
+const JournalResolvers = [FixedResolvers, DynResolvers]
 
 export {JournalTypes, JournalResolvers};

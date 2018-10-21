@@ -17,7 +17,7 @@ const Schema = `
 
 const schema = makeExecutableSchema({
     typeDefs: [Schema, JournalTypes],
-    resolvers: [JournalResolvers]
+    resolvers: JournalResolvers
 });
 
 const app = express();
