@@ -90,9 +90,6 @@ const MutationX = `
         id : ID!
     }
 
-    extend type Mutation {
-        withJournal (id: ID!) : JournalOps!
-    }
 `;
 
 const mutatorName = jnl => "with" + jnl.id + "Journal";
@@ -144,10 +141,6 @@ const FixedResolvers = {
         journalForId: (_, {id}) => DB.fetchJournal(id),
         journalEntryForId: (_, {id}) => DB.fetchJournalEntry(id),
         journals: () => DB.allJournals(),
-    },
-
-    Mutation: {
-        withJournal: (_, {id}) => DB.fetchJournal(id),
     },
 
     Journal: {
