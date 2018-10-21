@@ -107,3 +107,10 @@ fragment JournalEntry on JournalEntry {
   }
 }
 ```
+
+The `withSalesJournal` and `withDiscountsJournal` properties are generated from the 
+journal objects in the database. The journal name is used to distinguish the property
+names. The schema attached is used to generate the entry input types for each. Note that
+the same fragment used in the query accesses the post results.
+
+
