@@ -80,25 +80,17 @@ In the Graphiql UI, enter this query:
 
 ```graphql
 mutation {
-  postSale: withJournal(id: "Sales") {
-    ... on SalesJournalOps {
-      post(reference: "MYSALESENTRY",
-        entry: {amount: 100, sku: 200, customer: 300}) {
-        ...JournalEntry
-      }
+  postSales: withSalesJournal {
+    post(reference: "MYSALESENTRY", entry: {amount: 100, sku: 200, customer: 300}) {
+      ...JournalEntry
     }
   }
-
-  postDiscount: withJournal(id: "Discounts") {
-    ... on DiscountsJournalOps {
-      post(reference: "MYDISCENTRY",
-      entry: {paid: 29291, customer: 400}) {
-        ...JournalEntry
-      }
+  postDiscount: withDiscountsJournal {
+    post(reference: "MYDISCENTRY", entry: {paid: 29291, customer: 400}) {
+      ...JournalEntry
     }
   }
 }
-
 
 fragment JournalEntry on JournalEntry {
   id

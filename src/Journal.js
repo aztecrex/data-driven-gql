@@ -84,17 +84,7 @@ const QueryX = `
     }
 `;
 
-const MutationX = `
-
-    interface JournalOps {
-        id : ID!
-    }
-
-    extend type Mutation {
-        withJournal (id: ID!) : JournalOps!
-    }
-`;
-
+const mutatorName = jnl => "with" + jnl.id + "Journal";
 const entryName = jnl => jnl.id + "JournalEntry";
 const inputName = jnl => jnl.id + "JournalEntryInput";
 const opsName = jnl => jnl.id + "JournalOps";
@@ -119,12 +109,22 @@ const DynTypes = () => {
     const inputTypes = R.map(jnl => {
         return `input ${inputName(jnl)} {
             ${fields(jnl.schema)}
-        } type ${opsName(jnl)} implements JournalOps {
-            id : ID!
+        } type ${opsName(jnl)} {
             post(reference: String! entry : ${inputName(jnl)}!) : ${entryName(jnl)}!
         }`
     }, journals);
-    return R.concat(entryTypes, inputTypes);
+
+    const journalMutators = R.join(" ", R.map(jnl => {
+        return `${mutatorName(jnl)}:${opsName(jnl)}`
+    }, journals));
+
+    const mutateX = `
+        extend type Mutation {${journalMutators}}
+    `;
+
+    const rval = R.concat(R.concat(entryTypes, inputTypes), [mutateX]);
+
+    return rval;
 }
 
 const FixedResolvers = {
@@ -132,10 +132,6 @@ const FixedResolvers = {
         journalForId: (_, {id}) => DB.fetchJournal(id),
         journalEntryForId: (_, {id}) => DB.fetchJournalEntry(id),
         journals: () => DB.allJournals(),
-    },
-
-    Mutation: {
-        withJournal: (_, {id}) => DB.fetchJournal(id),
     },
 
     Journal: {
@@ -148,15 +144,12 @@ const FixedResolvers = {
         __resolveType: e => entryName(e.journal),
     },
 
-    JournalOps: {
-        __resolveType: jnl => opsName(jnl),
-    },
 }
 
 const DynResolvers = (() => {
     var dot = 19390421;
     const journals = DB.allJournals();
-    return R.reduce((obj, jnl) => {
+    const opsResolvers = R.reduce((obj, jnl) => {
         const res = {
             [opsName(jnl)]: {
                 post: (_, {reference, entry}) => {
@@ -176,10 +169,17 @@ const DynResolvers = (() => {
             }
         };
         return {...res, ...obj};
-    }, {}, journals);
+    }, {}, journals)
+    const mutationResolver = {Mutation: R.reduce((obj, jnl) => {
+        const res = {
+            [mutatorName(jnl)]: () => jnl,
+        };
+        return {...res, ...obj}
+    }, {}, journals)};
+    return {...opsResolvers, ...mutationResolver};
 })();
 
-const JournalTypes = () => [QueryX, Journal, JournalEntry, MutationX, DynTypes];
-const JournalResolvers = {...FixedResolvers, ...DynResolvers}
+const JournalTypes = () => [QueryX, Journal, JournalEntry, DynTypes];
+const JournalResolvers = [FixedResolvers, DynResolvers]
 
 export {JournalTypes, JournalResolvers};
