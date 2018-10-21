@@ -95,6 +95,7 @@ const MutationX = `
     }
 `;
 
+const mutatorName = jnl => "with" + jnl.id + "Journal";
 const entryName = jnl => jnl.id + "JournalEntry";
 const inputName = jnl => jnl.id + "JournalEntryInput";
 const opsName = jnl => jnl.id + "JournalOps";
@@ -124,7 +125,19 @@ const DynTypes = () => {
             post(reference: String! entry : ${inputName(jnl)}!) : ${entryName(jnl)}!
         }`
     }, journals);
-    return R.concat(entryTypes, inputTypes);
+
+    const journalMutators = R.join(" ", R.map(jnl => {
+        return `${mutatorName(jnl)}:${opsName(jnl)}`
+    }, journals));
+
+    const mutateX = `
+        extend type Mutation {${journalMutators}}
+    `;
+
+    const rval = R.concat(R.concat(entryTypes, inputTypes), [mutateX]);
+
+    console.log("--------------------", JSON.stringify(rval));
+    return rval;
 }
 
 const FixedResolvers = {
