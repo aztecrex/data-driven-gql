@@ -1,4 +1,4 @@
-# Data Driven GraphQL Experiments
+# Data Driven GraphQL Schema Experiments
 
 I need to model a dynamically-shaped API in GraphQL. In particular, the shape
 can be modified through configuration or an API. One approach is to marshall
