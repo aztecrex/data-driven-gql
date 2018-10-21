@@ -80,7 +80,7 @@ In the Graphiql UI, enter this query:
 
 ```graphql
 mutation {
-  postSales: withJournal(id: "Sales") {
+  postSale: withJournal(id: "Sales") {
     ... on SalesJournalOps {
       post(reference: "MYSALESENTRY",
         entry: {amount: 100, sku: 200, customer: 300}) {
