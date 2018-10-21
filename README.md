@@ -7,7 +7,7 @@ experience for my API users.
 
 I started this project to see if a GraphQL API schema can be a function of
 data and, if so, whether the resulting API can be convenient and clear. The
-result of these experiments show that it is entirely possible.
+results of these experiments show that it is entirely possible.
 
 The API in this project models a business Journal. A journal in this model
 is simply a list of business events that may (are likely to) have ledger impact
