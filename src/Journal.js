@@ -127,7 +127,7 @@ const DynTypes = () => {
     return R.concat(entryTypes, inputTypes);
 }
 
-const JournalResolvers = {
+const FixedResolvers = {
     Query: {
         journalForId: (_, {id}) => DB.fetchJournal(id),
         journalEntryForId: (_, {id}) => DB.fetchJournalEntry(id),
@@ -153,6 +153,33 @@ const JournalResolvers = {
     },
 }
 
+const DynResolvers = (() => {
+    var dot = 19390421;
+    const journals = DB.allJournals();
+    return R.reduce((obj, jnl) => {
+        const res = {
+            [opsName(jnl)]: {
+                post: (_, {reference, entry}) => {
+                    const when = new Date();
+                    dot = dot + 19;
+                    return {
+                        id: `${when.getTime()}.${dot}`,
+                        journal: jnl,
+                        clientReference: reference,
+                        timestamp: when.toISOString(),
+                        customer: entry.customer,
+                        paid: entry.paid,
+                        sku: entry.sku,
+                        amount: entry.amount,
+                    };
+                }
+            }
+        };
+        return {...res, ...obj};
+    }, {}, journals);
+})();
+
 const JournalTypes = () => [QueryX, Journal, JournalEntry, MutationX, DynTypes];
+const JournalResolvers = {...FixedResolvers, ...DynResolvers}
 
 export {JournalTypes, JournalResolvers};
