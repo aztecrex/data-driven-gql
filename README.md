@@ -50,4 +50,44 @@ are generated at runtime from the ids of the `Sales` nd `Discounts` journal
 objects. Notice they have different fields based on the `schema` field of each
 journal object in the database.
 
+## Mutation Sample
 
+In the Graphiql UI, enter this query:
+
+```graphql
+mutation {
+  postSales: withJournal(id: "Sales") {
+    ... on SalesJournalOps {
+      post(reference: "MYSALESENTRY",
+        entry: {amount: 100, sku: 200, customer: 300}) {
+        ...JournalEntry
+      }
+    }
+  }
+
+  postDiscount: withJournal(id: "Discounts") {
+    ... on DiscountsJournalOps {
+      post(reference: "MYDISCENTRY",
+      entry: {paid: 29291, customer: 400}) {
+        ...JournalEntry
+      }
+    }
+  }
+}
+
+
+fragment JournalEntry on JournalEntry {
+  id
+  clientReference
+  timestamp
+  ... on SalesJournalEntry {
+    amount
+    sku
+    customer
+  }
+  ... on DiscountsJournalEntry {
+    paid
+    customer
+  }
+}
+```
