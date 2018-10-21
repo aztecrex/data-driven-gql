@@ -84,14 +84,6 @@ const QueryX = `
     }
 `;
 
-const MutationX = `
-
-    interface JournalOps {
-        id : ID!
-    }
-
-`;
-
 const mutatorName = jnl => "with" + jnl.id + "Journal";
 const entryName = jnl => jnl.id + "JournalEntry";
 const inputName = jnl => jnl.id + "JournalEntryInput";
@@ -117,8 +109,7 @@ const DynTypes = () => {
     const inputTypes = R.map(jnl => {
         return `input ${inputName(jnl)} {
             ${fields(jnl.schema)}
-        } type ${opsName(jnl)} implements JournalOps {
-            id : ID!
+        } type ${opsName(jnl)} {
             post(reference: String! entry : ${inputName(jnl)}!) : ${entryName(jnl)}!
         }`
     }, journals);
@@ -153,9 +144,6 @@ const FixedResolvers = {
         __resolveType: e => entryName(e.journal),
     },
 
-    JournalOps: {
-        __resolveType: jnl => opsName(jnl),
-    },
 }
 
 const DynResolvers = (() => {
@@ -191,7 +179,7 @@ const DynResolvers = (() => {
     return {...opsResolvers, ...mutationResolver};
 })();
 
-const JournalTypes = () => [QueryX, Journal, JournalEntry, MutationX, DynTypes];
+const JournalTypes = () => [QueryX, Journal, JournalEntry, DynTypes];
 const JournalResolvers = [FixedResolvers, DynResolvers]
 
 export {JournalTypes, JournalResolvers};
