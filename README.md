@@ -70,7 +70,7 @@ fragment JournalEntry on JournalEntry {
 
 ```
 The distinct journal entry types `SalesJournalEntry` and `DiscountsJournalEntry`
-are generated at runtime from the ids of the `Sales` nd `Discounts` journal
+are generated at runtime from the ids of the `Sales` and `Discounts` journal
 objects. Notice they have different fields based on the `schema` field of each
 journal object in the database.
 
