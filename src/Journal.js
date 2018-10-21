@@ -134,14 +134,23 @@ const JournalResolvers = {
         journals: () => DB.allJournals(),
     },
 
+    Mutation: {
+        withJournal: (_, {id}) => DB.fetchJournal(id),
+    },
+
     Journal: {
         entries: (jnl) => DB.journalEntries(jnl.id),
         entriesForRange: (jnl) => DB.journalEntries(jnl.id),
 
     },
+
     JournalEntry: {
         __resolveType: e => entryName(e.journal),
-    }
+    },
+
+    JournalOps: {
+        __resolveType: jnl => opsName(jnl),
+    },
 }
 
 const JournalTypes = () => [QueryX, Journal, JournalEntry, MutationX, DynTypes];
