@@ -1,5 +1,29 @@
 # Data Driven GraphQL Experiments
 
+I need to model a dynamically-shaped API in GraphQL. In particular, the shape
+can be modified through configuration or an API. One approach is to marshall
+the parts that can change into a scalar type. I don't think that would be a good
+experience for my API users.
+
+I started this project to see if a GraphQL API schema can be a function of
+data and, if so, whether the resulting API can be convenient and clear. The
+result of these experiments show that it is entirely possible.
+
+The API in this project models a business Journal. A journal in this model
+is simply a list of business events that may (are likely to) have ledger impact
+on the business. Booking (the application of the journals to a ledger) is not
+modeled by this simple API.
+
+This project shows that a journal's type can result in a different API for
+both retrieving and posting journal entries. There are two journals,
+"Sales" and "Discounts." The fields in the entries of each type are different.
+I've made the simplifying assumption that the variable schema is simply a list
+of named integer values. But the dynamic schema could easily map to more types.
+
+The project runs with express and serves a Graphiql UI for messing around with
+it.
+
+
 ## Run Locally
 
 Clone this project and `npm install` it.
