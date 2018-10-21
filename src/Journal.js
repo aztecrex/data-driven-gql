@@ -84,49 +84,6 @@ const QueryX = `
     }
 `;
 
-
-
-
-const TestOps = `
-
-    input TestIn {
-        """
-        Unique entry reference identifier defined by the entity posting the entry. Uniqueness
-        is with respect to the journal in which the entry resides.
-        """
-        clientReference : String!
-
-        amount: Int
-    }
-
-    type TestJournalOps implements JournalOps {
-        id : ID!
-        post(entry : TestIn!) : JournalEntry!
-    }
-
-
-`;
-
-const OtherOps = `
-
-    input OtherIn {
-        """
-        Unique entry reference identifier defined by the entity posting the entry. Uniqueness
-        is with respect to the journal in which the entry resides.
-        """
-        clientReference : String!
-
-        adjust: Int
-    }
-
-    type OtherJournalOps implements JournalOps {
-        id : ID!
-        post(entry : OtherIn!) : JournalEntry!
-    }
-
-
-`;
-
 const MutationX = `
 
     interface JournalOps {
@@ -139,6 +96,8 @@ const MutationX = `
 `;
 
 const entryName = jnl => jnl.id + "JournalEntry";
+const inputName = jnl => jnl.id + "JournalEntryInput";
+const opsName = jnl => jnl.id + "JournalOps";
 
 const DynTypes = () => {
 
@@ -148,7 +107,7 @@ const DynTypes = () => {
         return rval;
     }
     const journals = DB.allJournals();
-    const rval = R.map(jnl => {
+    const entryTypes = R.map(jnl => {
         return `type ${entryName(jnl)} implements JournalEntry {
             clientReference : String!
             id: String!
@@ -157,14 +116,26 @@ const DynTypes = () => {
             ${fields(jnl.schema)}
         }`
     }, journals);
-    return rval;
+    const inputTypes = R.map(jnl => {
+        return `input ${inputName(jnl)} {
+            ${fields(jnl.schema)}
+        } type ${opsName(jnl)} implements JournalOps {
+            id : ID!
+            post(reference: String! entry : ${inputName(jnl)}!) : ${entryName(jnl)}!
+        }`
+    }, journals);
+    return R.concat(entryTypes, inputTypes);
 }
 
-const JournalResolvers = {
+const FixedResolvers = {
     Query: {
         journalForId: (_, {id}) => DB.fetchJournal(id),
         journalEntryForId: (_, {id}) => DB.fetchJournalEntry(id),
         journals: () => DB.allJournals(),
+    },
+
+    Mutation: {
+        withJournal: (_, {id}) => DB.fetchJournal(id),
     },
 
     Journal: {
@@ -172,11 +143,43 @@ const JournalResolvers = {
         entriesForRange: (jnl) => DB.journalEntries(jnl.id),
 
     },
+
     JournalEntry: {
         __resolveType: e => entryName(e.journal),
-    }
+    },
+
+    JournalOps: {
+        __resolveType: jnl => opsName(jnl),
+    },
 }
 
-const JournalTypes = () => [QueryX, Journal, JournalEntry, MutationX, TestOps, OtherOps, DynTypes];
+const DynResolvers = (() => {
+    var dot = 19390421;
+    const journals = DB.allJournals();
+    return R.reduce((obj, jnl) => {
+        const res = {
+            [opsName(jnl)]: {
+                post: (_, {reference, entry}) => {
+                    const when = new Date();
+                    dot = dot + 19;
+                    return {
+                        id: `${when.getTime()}.${dot}`,
+                        journal: jnl,
+                        clientReference: reference,
+                        timestamp: when.toISOString(),
+                        customer: entry.customer,
+                        paid: entry.paid,
+                        sku: entry.sku,
+                        amount: entry.amount,
+                    };
+                }
+            }
+        };
+        return {...res, ...obj};
+    }, {}, journals);
+})();
+
+const JournalTypes = () => [QueryX, Journal, JournalEntry, MutationX, DynTypes];
+const JournalResolvers = {...FixedResolvers, ...DynResolvers}
 
 export {JournalTypes, JournalResolvers};
