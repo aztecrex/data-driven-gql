@@ -1,13 +1,12 @@
 import * as R from 'ramda';
-
-import TenantTypes from './Tenant';
+import * as DB from './DB';
 
 const JournalEntry = `
     """
     A business event. Generally, a journal entry results
     in a financial impact, i.e. a ledger transaction.
     """
-    type JournalEntry {
+    interface JournalEntry {
         """
         Unique entry reference identifier defined by the entity posting the entry. Uniqueness
         is with respect to the journal in which the entry resides.
@@ -34,11 +33,6 @@ const JournalEntry = `
         """
         journal: Journal!
 
-        """
-        The Tenant owning this entry.
-        """
-        tenant: Tenant!
-
     }
 `;
 
@@ -50,12 +44,7 @@ const Journal = `
         """
         Journal identity.
         """
-        id: ID!
-
-        """
-        Journal name. Required but not unique.
-        """
-        name: String!
+        id: String!
 
         """
         Journal description. Not required.
@@ -72,27 +61,8 @@ const Journal = `
         """
         entries: [JournalEntry!]!
 
-        """
-        The Tenant owning this journal.
-        """
-        tenant: Tenant!
     }
 `;
-
-const TenantX = `
-    extend type Tenant {
-        """
-        All journals in the instance.
-        """
-        journals: [Journal!]!
-
-        """
-        Lookup journals by name. Names are not unique so this can return zero or more
-        Journals.
-        """
-        journalsForName (name: String!): [Journal!]!
-    }
-`
 
 const QueryX = `
     extend type Query {
@@ -105,6 +75,12 @@ const QueryX = `
         Fetch a journal entry by its identifier.
         """
         journalEntryForId(id: String!): JournalEntry!
+
+        """
+        Retrieve all journals.
+        """
+        journals: [Journal!]!
+
     }
 `;
 
@@ -162,29 +138,45 @@ const MutationX = `
     }
 `;
 
+const entryName = jnl => jnl.id + "JournalEntry";
 
-const tenant = {id: 10092};
-const journals = [
-    {
-        id: "1",
-        name: "Sales",
-        description: "All sales",
-        tenant : tenant,
-    },
-    {
-        id: "2",
-        name: "Discounts",
-        description: "All discounts",
-        tenant : tenant,
-    },
-];
+const DynTypes = () => {
+
+    const fields = ns => {
+        const ds = R.map (n => `${n} : Int!`, ns);
+        const rval =  R.join(" ", ds);
+        return rval;
+    }
+    const journals = DB.allJournals();
+    const rval = R.map(jnl => {
+        return `type ${entryName(jnl)} implements JournalEntry {
+            clientReference : String!
+            id: String!
+            timestamp: String!
+            journal: Journal!
+            ${fields(jnl.schema)}
+        }`
+    }, journals);
+    return rval;
+}
 
 const JournalResolvers = {
     Query: {
-        journalForId: (_, {id}) => R.find(obj => obj.id === id, journals),
+        journalForId: (_, {id}) => DB.fetchJournal(id),
+        journalEntryForId: (_, {id}) => DB.fetchJournalEntry(id),
+        journals: () => DB.allJournals(),
+    },
+
+    Journal: {
+        entries: (jnl) => DB.journalEntries(jnl.id),
+        entriesForRange: (jnl) => DB.journalEntries(jnl.id),
+
+    },
+    JournalEntry: {
+        __resolveType: e => entryName(e.journal),
     }
 }
 
-const JournalTypes = () => [QueryX, Journal, JournalEntry, TenantX, MutationX, TestOps, OtherOps, TenantTypes];
+const JournalTypes = () => [QueryX, Journal, JournalEntry, MutationX, TestOps, OtherOps, DynTypes];
 
 export {JournalTypes, JournalResolvers};
