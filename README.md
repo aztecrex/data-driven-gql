@@ -82,35 +82,24 @@ In the Graphiql UI, enter this query:
 mutation {
   postSales: withSalesJournal {
     post(reference: "MYSALESENTRY", entry: {amount: 100, sku: 200, customer: 300}) {
-      ...JournalEntry
+      id
+      clientReference
+      timestamp
+      sku
     }
   }
   postDiscount: withDiscountsJournal {
     post(reference: "MYDISCENTRY", entry: {paid: 29291, customer: 400}) {
-      ...JournalEntry
+      id
+      paid
     }
   }
 }
 
-fragment JournalEntry on JournalEntry {
-  id
-  clientReference
-  timestamp
-  ... on SalesJournalEntry {
-    amount
-    sku
-    customer
-  }
-  ... on DiscountsJournalEntry {
-    paid
-    customer
-  }
-}
 ```
 
 The `withSalesJournal` and `withDiscountsJournal` properties are generated from the 
 journal objects in the database. The journal name is used to distinguish the property
-names. The schema attached is used to generate the entry input types for each. Note that
-the same fragment used in the query accesses the post results.
+names. The schema attached is used to generate the entry input types for each.
 
 
